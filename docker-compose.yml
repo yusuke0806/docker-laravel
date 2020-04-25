@@ -48,6 +48,16 @@ services:
       - TZ=${TZ:-Asia/Tokyo}
     ports:
       - ${DB_PORT:-13306}:3306
+  node:
+    image: node:12.14-alpine
+    tty: true
+    volumes:
+       - ${PROJECT_PATH:-.src}:/work
+    working_dir: /work
+  redis:
+    image: redis:5.0-alpine
+    volumes:
+      - redis-store:/data
 volumes:
   db-store:
   redis-store:
