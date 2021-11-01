@@ -1,15 +1,18 @@
-FROM php:8.0-fpm-alpine
-LABEL maintainer "yuusuke"
+FROM php:8.0-fpm-buster
 
-ARG TZ
+SHELL ["/bin/bash", "-oeux", "pipefail", "-c"]
+
 ENV COMPOSER_ALLOW_SUPERUSER 1
-ENV COMPOSER_HOME /composer
+ENV COMPOSER_HOME=/composer
 
-RUN set -eux && \
-  apk add --update-cache --no-cache --virtual=.build-dependencies tzdata && \
-  cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
-  apk del .build-dependencies && \
-  docker-php-ext-install bcmath pdo_mysql && \
-  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer && \
-  composer config -g repos.packagist composer https://packagist.jp && \
-  composer global require hirak/prestissimo
+COPY --from=composer:2.0 /usr/bin/composer /usr/bin/composer
+
+RUN apt-get update && \
+  apt-get -y install git unzip libzip-dev libicu-dev libonig-dev && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* && \
+  docker-php-ext-install intl pdo_mysql zip bcmath
+
+COPY ./php.ini /usr/local/etc/php/php.ini
+
+WORKDIR /work
